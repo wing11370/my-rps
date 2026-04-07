@@ -1,0 +1,28 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        Int          @id @default(autoincrement())
+  username  String       @unique
+  createdAt DateTime     @default(now())
+  games     GameRecord[]
+}
+
+model GameRecord {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  playerMove String
+  cpuMove    String
+  result     String
+  createdAt  DateTime @default(now())
+}

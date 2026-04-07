@@ -1,0 +1,24 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import ClientLayout from "@/components/ClientLayout";
+
+export const metadata: Metadata = {
+  title: "猜拳遊戲 Rock Paper Scissors",
+  description: "Play Rock Paper Scissors with leaderboard",
+};
+
+const RootLayout = ({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) => {
+  return (
+    <html lang="zh" className="h-full antialiased">
+      <body>
+        <ClientLayout>{children}</ClientLayout>
+      </body>
+    </html>
+  );
+}
+
+export default RootLayout
