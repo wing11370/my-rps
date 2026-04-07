@@ -361,6 +361,28 @@ const RightCell = styled(Cell)<{ $color?: string; $bold?: boolean }>`
   font-weight: ${(p) => (p.$bold ? "800" : "normal")};
 `;
 
+const ButtonsRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+const DangerButton = styled.button<{ $small?: boolean }>`
+  width: ${(p) => (p.$small ? "auto" : "100%")};
+  padding: ${(p) => (p.$small ? "0.5rem 0.75rem" : "0.75rem 1rem")};
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
 const Home: FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
@@ -372,19 +394,31 @@ const Home: FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const [resetting, setResetting] = useState(false);
 
   const fetchLeaderboard = useCallback(async () => {
     setLoadingLeaderboard(true);
     try {
       const res = await fetch("/api/leaderboard");
-      const data = await res.json();
+      const data: LeaderboardEntry[] = await res.json();
       setLeaderboard(data);
+
+      // If a user is logged in, sync their score from the leaderboard
+      if (user) {
+        const myEntry = data.find((e) => e.id === user.id);
+        if (myEntry) {
+          setScore({ wins: myEntry.wins, losses: myEntry.losses, draws: myEntry.draws });
+        } else {
+          // no entry -> zeroed scores
+          setScore({ wins: 0, losses: 0, draws: 0 });
+        }
+      }
     } catch (err) {
       console.error("Failed to fetch leaderboard", err);
     } finally {
       setLoadingLeaderboard(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchLeaderboard();
@@ -414,6 +448,25 @@ const Home: FC = () => {
     } catch (err) {
       console.error(err);
       setLoginError("網路錯誤，請稍後再試");
+    }
+  };
+
+  const handleResetScores = async () => {
+    if (!confirm('你確定要清空所有分數？此動作無法復原。')) return;
+    setResetting(true);
+    try {
+      const res = await fetch('/api/admin/reset-scores', { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || '重設失敗');
+        return;
+      }
+      fetchLeaderboard();
+    } catch (err) {
+      console.error('Failed to reset scores', err);
+      alert('網路錯誤，請稍後再試');
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -565,7 +618,10 @@ const Home: FC = () => {
         <LeaderboardCard>
           <SectionHeader>
             <SectionTitle>🏆 排行榜 Leaderboard</SectionTitle>
-            <PrimaryButton $small onClick={fetchLeaderboard} disabled={loadingLeaderboard}>{loadingLeaderboard ? "載入中..." : "重新整理"}</PrimaryButton>
+            <ButtonsRow>
+              <PrimaryButton $small onClick={fetchLeaderboard} disabled={loadingLeaderboard}>{loadingLeaderboard ? "載入中..." : "重新整理"}</PrimaryButton>
+              <DangerButton $small onClick={handleResetScores} disabled={loadingLeaderboard || resetting}>清空所有分數</DangerButton>
+            </ButtonsRow>
           </SectionHeader>
 
           {leaderboard.length === 0 ? (
