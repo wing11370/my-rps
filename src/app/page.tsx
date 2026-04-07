@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, type FC } from "react";
+import React, { useState, useEffect, useCallback, useRef, type FC } from "react";
 import styled from "styled-components";
+import { io, type Socket } from "socket.io-client";
 
 type Move = "rock" | "paper" | "scissors";
 type Result = "win" | "loss" | "draw";
@@ -24,6 +25,11 @@ interface LeaderboardEntry {
   losses: number;
   draws: number;
   total: number;
+}
+
+interface Opponent {
+  id: number;
+  username: string;
 }
 
 const moveEmoji: Record<Move, string> = {
@@ -367,6 +373,19 @@ const ButtonsRow = styled.div`
   align-items: center;
 `;
 
+const MultiplayerCard = styled(GlassCard)`
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const InputRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
 const DangerButton = styled.button<{ $small?: boolean }>`
   width: ${(p) => (p.$small ? "auto" : "100%")};
   padding: ${(p) => (p.$small ? "0.5rem 0.75rem" : "0.75rem 1rem")};
@@ -396,6 +415,15 @@ const Home: FC = () => {
   const [loginError, setLoginError] = useState("");
   const [resetting, setResetting] = useState(false);
 
+  // Multiplayer socket state
+  const socketRef = useRef<Socket | null>(null);
+  const [roomInput, setRoomInput] = useState("");
+  const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+  const [opponent, setOpponent] = useState<Opponent | null>(null);
+  const [inRoom, setInRoom] = useState(false);
+
+  const SOCKET_URL = (process.env.NEXT_PUBLIC_SOCKET_URL as string) || "http://localhost:4000";
+
   const fetchLeaderboard = useCallback(async () => {
     setLoadingLeaderboard(true);
     try {
@@ -423,6 +451,20 @@ const Home: FC = () => {
   useEffect(() => {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
+
+  // cleanup socket on unmount
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        try {
+          socketRef.current.disconnect();
+        } catch (e) {
+          // ignore
+        }
+        socketRef.current = null;
+      }
+    };
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -470,8 +512,106 @@ const Home: FC = () => {
     }
   };
 
+  // Socket helpers
+  const connectSocket = () => {
+    if (socketRef.current) return socketRef.current;
+    const s = io(SOCKET_URL, { transports: ["websocket"] });
+    socketRef.current = s;
+
+    s.on("connect", () => {
+      console.log("socket connected", s.id);
+    });
+
+    s.on("room_joined", (data: any) => {
+      setInRoom(true);
+      setOpponent(data?.opponent || null);
+    });
+
+    s.on("room_ready", (data: any) => {
+      setOpponent(data?.opponent || null);
+    });
+
+    s.on("match_result", (payload: any) => {
+      if (!payload) return;
+      const { myMove, opponentMove, myResult } = payload;
+      setPlayerMove(myMove);
+      setCpuMove(opponentMove);
+      setResult(myResult);
+      setScore((prev) => ({
+        wins: prev.wins + (myResult === "win" ? 1 : 0),
+        losses: prev.losses + (myResult === "loss" ? 1 : 0),
+        draws: prev.draws + (myResult === "draw" ? 1 : 0),
+      }));
+
+      // persist multiplayer result via existing API
+      fetch("/api/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user?.id,
+          playerMove: myMove,
+          cpuMove: opponentMove,
+          result: myResult,
+        }),
+      })
+        .then(() => fetchLeaderboard())
+        .catch((err) => console.error("Failed to save multiplayer game", err));
+
+      setIsAnimating(false);
+    });
+
+    s.on("opponent_left", () => {
+      setOpponent(null);
+      setInRoom(false);
+      setCurrentRoom(null);
+      // notify user
+    });
+
+    s.on("disconnect", () => {
+      setInRoom(false);
+      setOpponent(null);
+      setCurrentRoom(null);
+      socketRef.current = null;
+    });
+
+    return s;
+  };
+
+  const joinRoom = (roomId: string) => {
+    if (!user) {
+      alert("請先登入");
+      return;
+    }
+    const s = connectSocket();
+    s.emit("join", { roomId, userId: user.id, username: user.username });
+    setCurrentRoom(roomId);
+    setRoomInput(roomId);
+  };
+
+  const leaveRoom = () => {
+    if (!socketRef.current || !currentRoom || !user) return;
+    socketRef.current.emit("leave", { roomId: currentRoom, userId: user.id });
+    socketRef.current.disconnect();
+    socketRef.current = null;
+    setCurrentRoom(null);
+    setInRoom(false);
+    setOpponent(null);
+  };
+
   const handleMove = async (move: Move) => {
     if (isAnimating || !user) return;
+
+    // If in a multiplayer room, send move to server and wait for match_result
+    if (socketRef.current && inRoom && currentRoom) {
+      setIsAnimating(true);
+      setResult(null);
+      setPlayerMove(null);
+      setCpuMove(null);
+      socketRef.current.emit("move", { roomId: currentRoom, userId: user.id, move });
+      return;
+    }
+
+    // single-player flow (vs computer)
     setIsAnimating(true);
     setResult(null);
     setPlayerMove(null);
@@ -567,6 +707,32 @@ const Home: FC = () => {
               <UserName>👤 {user.username}</UserName>
               <PrimaryButton $small onClick={handleLogout}>換人 / 登出</PrimaryButton>
             </UserBar>
+
+            <MultiplayerCard>
+              <SectionHeader>
+                <SectionTitle>🔗 即時對戰</SectionTitle>
+                <ButtonsRow>
+                  {!inRoom ? (
+                    <>
+                      <PrimaryButton $small onClick={() => { const id = Math.random().toString(36).slice(2, 8).toUpperCase(); joinRoom(id); }}>建立房間</PrimaryButton>
+                      <PrimaryButton $small onClick={() => { if (!roomInput) return alert('請輸入房間代碼或建立房間'); joinRoom(roomInput); }}>加入房間</PrimaryButton>
+                    </>
+                  ) : (
+                    <DangerButton $small onClick={leaveRoom}>離開房間</DangerButton>
+                  )}
+                </ButtonsRow>
+              </SectionHeader>
+
+              <InputRow>
+                <TextInput value={roomInput} onChange={(e) => setRoomInput(e.target.value)} placeholder="房間代碼 (留空以自動建立)" />
+              </InputRow>
+
+              {inRoom && (
+                <div>
+                  目前房間: <strong>{currentRoom}</strong> — {opponent ? `對手：${opponent.username}` : '等待對手加入...'}
+                </div>
+              )}
+            </MultiplayerCard>
 
             <MovesWrapper>
               <MovesTitle>選擇你的出拳！</MovesTitle>

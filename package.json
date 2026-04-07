@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "socket-server": "node server/index.js"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.6.0",
@@ -17,7 +18,9 @@
     "prisma": "^7.6.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "styled-components": "^6.3.12"
+    "styled-components": "^6.3.12",
+    "socket.io": "^4.8.0",
+    "socket.io-client": "^4.8.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
