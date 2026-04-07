@@ -231,6 +231,136 @@ const Centered = styled.div`
   text-align: center;
 `;
 
+const LoginTitle = styled.h2`
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  text-align: center;
+`;
+
+const ErrorText = styled.p`
+  color: #fb7185;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  gap: 1rem;
+`;
+
+const UserBar = styled(GlassCard)`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+`;
+
+const UserName = styled.span`
+  font-weight: 700;
+  font-size: 1rem;
+`;
+
+const MovesTitle = styled.h3`
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: rgba(192,132,252,0.9);
+`;
+
+const EmojiSpan = styled.span`
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+`;
+
+const MoveLabel = styled.span`
+  font-weight: 700;
+`;
+
+const MoveMeta = styled.span`
+  font-size: 0.75rem;
+  color: rgba(192,132,252,0.8);
+  margin-top: 0.25rem;
+  text-transform: capitalize;
+`;
+
+const ScoreValue = styled.div`
+  font-size: 1.5rem;
+  font-weight: 800;
+`;
+
+const ScoreLabel = styled.div<{ $labelColor?: string }>`
+  color: ${(p) => p.$labelColor || "inherit"};
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+`;
+
+const ResultInner = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 0.75rem;
+`;
+
+const ResultBlock = styled.div`
+  text-align: center;
+`;
+
+const ResultEmoji = styled.div`
+  font-size: 3rem;
+  margin-bottom: 0.25rem;
+`;
+
+const ResultUserLabel = styled.div`
+  color: rgba(192,132,252,0.9);
+`;
+
+const VSLabel = styled.div`
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.6);
+`;
+
+const ResultTextStyled = styled.div<{ $color?: string }>`
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: ${(p) => p.$color || "#fff"};
+`;
+
+const SectionHeader = styled(FlexBetween)`
+  margin-bottom: 0.5rem;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.125rem;
+  font-weight: 800;
+`;
+
+const EmptyState = styled(Centered)`
+  color: rgba(192,132,252,0.9);
+  padding: 1rem 0;
+`;
+
+const OverflowContainer = styled.div`
+  overflow-x: auto;
+`;
+
+const LeaderboardHeadRight = styled(LeaderboardHead)`
+  text-align: right;
+`;
+
+const UsernameCell = styled(Cell)`
+  font-weight: 700;
+`;
+
+const RightCell = styled(Cell)<{ $color?: string; $bold?: boolean }>`
+  text-align: right;
+  color: ${(p) => p.$color || "inherit"};
+  font-weight: ${(p) => (p.$bold ? "800" : "normal")};
+`;
+
 const Home: FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
@@ -360,9 +490,7 @@ const Home: FC = () => {
         {!user ? (
           <Center>
             <LoginCard>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.75rem", textAlign: "center" }}>
-                歡迎！請輸入你的名字
-              </h2>
+              <LoginTitle>歡迎！請輸入你的名字</LoginTitle>
               <Form onSubmit={handleLogin}>
                 <div>
                   <TextInput
@@ -373,7 +501,7 @@ const Home: FC = () => {
                     maxLength={20}
                   />
                   {loginError && (
-                    <p style={{ color: "#fb7185", marginTop: "0.5rem", fontSize: "0.875rem" }}>{loginError}</p>
+                    <ErrorText>{loginError}</ErrorText>
                   )}
                 </div>
                 <PrimaryButton type="submit">開始遊戲 🎮</PrimaryButton>
@@ -381,20 +509,20 @@ const Home: FC = () => {
             </LoginCard>
           </Center>
         ) : (
-          <div style={{ display: "grid", gap: "1rem" }}>
-            <GlassCard style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 1rem" }}>
-              <span style={{ fontWeight: 700, fontSize: "1rem" }}>👤 {user.username}</span>
+          <ContentGrid>
+            <UserBar>
+              <UserName>👤 {user.username}</UserName>
               <PrimaryButton $small onClick={handleLogout}>換人 / 登出</PrimaryButton>
-            </GlassCard>
+            </UserBar>
 
             <MovesWrapper>
-              <h3 style={{ textAlign: "center", fontSize: "1rem", fontWeight: 700, marginBottom: "0.75rem", color: "rgba(192,132,252,0.9)" }}>選擇你的出拳！</h3>
+              <MovesTitle>選擇你的出拳！</MovesTitle>
               <MovesGrid>
                 {moves.map((move) => (
                   <MoveButton key={move} onClick={() => handleMove(move)} disabled={isAnimating}>
-                    <span style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>{moveEmoji[move]}</span>
-                    <span style={{ fontWeight: 700 }}>{moveName[move]}</span>
-                    <span style={{ fontSize: "0.75rem", color: "rgba(192,132,252,0.8)", marginTop: "0.25rem", textTransform: "capitalize" }}>{move}</span>
+                    <EmojiSpan>{moveEmoji[move]}</EmojiSpan>
+                    <MoveLabel>{moveName[move]}</MoveLabel>
+                    <MoveMeta>{move}</MoveMeta>
                   </MoveButton>
                 ))}
               </MovesGrid>
@@ -402,73 +530,73 @@ const Home: FC = () => {
 
             <ScoreGrid>
               <ScoreCard $bg="rgba(16,185,129,0.12)" $border="rgba(16,185,129,0.25)" $text="#34d399">
-                <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.wins}</div>
-                <div style={{ color: "rgba(16,185,129,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>勝利 Wins</div>
+                <ScoreValue>{score.wins}</ScoreValue>
+                <ScoreLabel $labelColor="rgba(16,185,129,0.7)">勝利 Wins</ScoreLabel>
               </ScoreCard>
-                <ScoreCard $bg="rgba(234,179,8,0.12)" $border="rgba(234,179,8,0.25)" $text="#f59e0b">
-                <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.draws}</div>
-                <div style={{ color: "rgba(234,179,8,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>平局 Draws</div>
+              <ScoreCard $bg="rgba(234,179,8,0.12)" $border="rgba(234,179,8,0.25)" $text="#f59e0b">
+                <ScoreValue>{score.draws}</ScoreValue>
+                <ScoreLabel $labelColor="rgba(234,179,8,0.7)">平局 Draws</ScoreLabel>
               </ScoreCard>
-                <ScoreCard $bg="rgba(239,68,68,0.12)" $border="rgba(239,68,68,0.25)" $text="#f87171">
-                <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.losses}</div>
-                <div style={{ color: "rgba(239,68,68,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>失敗 Losses</div>
+              <ScoreCard $bg="rgba(239,68,68,0.12)" $border="rgba(239,68,68,0.25)" $text="#f87171">
+                <ScoreValue>{score.losses}</ScoreValue>
+                <ScoreLabel $labelColor="rgba(239,68,68,0.7)">失敗 Losses</ScoreLabel>
               </ScoreCard>
             </ScoreGrid>
 
             {result && playerMove && cpuMove && (
               <ResultCard>
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "2rem", marginBottom: "0.75rem" }}>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "3rem", marginBottom: "0.25rem" }}>{moveEmoji[playerMove]}</div>
-                    <div style={{ color: "rgba(192,132,252,0.9)" }}>你：{moveName[playerMove]}</div>
-                  </div>
-                  <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "rgba(255,255,255,0.6)" }}>VS</div>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "3rem", marginBottom: "0.25rem" }}>{moveEmoji[cpuMove]}</div>
-                    <div style={{ color: "rgba(192,132,252,0.9)" }}>電腦：{moveName[cpuMove]}</div>
-                  </div>
-                </div>
-                <div style={{ fontSize: "1.5rem", fontWeight: 800, color: resultColor[result] }}>{resultText[result]}</div>
+                <ResultInner>
+                  <ResultBlock>
+                    <ResultEmoji>{moveEmoji[playerMove]}</ResultEmoji>
+                    <ResultUserLabel>你：{moveName[playerMove]}</ResultUserLabel>
+                  </ResultBlock>
+                  <VSLabel>VS</VSLabel>
+                  <ResultBlock>
+                    <ResultEmoji>{moveEmoji[cpuMove]}</ResultEmoji>
+                    <ResultUserLabel>電腦：{moveName[cpuMove]}</ResultUserLabel>
+                  </ResultBlock>
+                </ResultInner>
+                <ResultTextStyled $color={resultColor[result]}>{resultText[result]}</ResultTextStyled>
               </ResultCard>
             )}
-          </div>
+          </ContentGrid>
         )}
 
         <LeaderboardCard>
-          <FlexBetween style={{ marginBottom: "0.5rem" }}>
-            <h2 style={{ fontSize: "1.125rem", fontWeight: 800 }}>🏆 排行榜 Leaderboard</h2>
+          <SectionHeader>
+            <SectionTitle>🏆 排行榜 Leaderboard</SectionTitle>
             <PrimaryButton $small onClick={fetchLeaderboard} disabled={loadingLeaderboard}>{loadingLeaderboard ? "載入中..." : "重新整理"}</PrimaryButton>
-          </FlexBetween>
+          </SectionHeader>
 
           {leaderboard.length === 0 ? (
-            <Centered style={{ color: "rgba(192,132,252,0.9)", padding: "1rem 0" }}>尚無紀錄，快來挑戰吧！</Centered>
+            <EmptyState>尚無紀錄，快來挑戰吧！</EmptyState>
           ) : (
-            <div style={{ overflowX: "auto" }}>
+            <OverflowContainer>
               <LeaderboardTable>
                 <thead>
                   <tr>
                     <LeaderboardHead>排名</LeaderboardHead>
                     <LeaderboardHead>玩家</LeaderboardHead>
-                    <LeaderboardHead style={{ textAlign: "right" }}>勝</LeaderboardHead>
-                    <LeaderboardHead style={{ textAlign: "right" }}>平</LeaderboardHead>
-                    <LeaderboardHead style={{ textAlign: "right" }}>敗</LeaderboardHead>
-                    <LeaderboardHead style={{ textAlign: "right" }}>總場次</LeaderboardHead>
+                    <LeaderboardHeadRight>勝</LeaderboardHeadRight>
+                    <LeaderboardHeadRight>平</LeaderboardHeadRight>
+                    <LeaderboardHeadRight>敗</LeaderboardHeadRight>
+                    <LeaderboardHeadRight>總場次</LeaderboardHeadRight>
                   </tr>
                 </thead>
                 <tbody>
                   {leaderboard.map((entry, index) => (
                     <LeaderboardRow key={entry.id} $highlighted={!!user && entry.username === user.username}>
                       <RankCell>{index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`}</RankCell>
-                      <Cell style={{ fontWeight: 700 }}>{entry.username}</Cell>
-                      <Cell style={{ textAlign: "right", color: "#34d399", fontWeight: 800 }}>{entry.wins}</Cell>
-                      <Cell style={{ textAlign: "right", color: "#f59e0b" }}>{entry.draws}</Cell>
-                      <Cell style={{ textAlign: "right", color: "#f87171" }}>{entry.losses}</Cell>
-                      <Cell style={{ textAlign: "right", color: "rgba(192,132,252,0.9)" }}>{entry.total}</Cell>
+                      <UsernameCell>{entry.username}</UsernameCell>
+                      <RightCell $color="#34d399" $bold>{entry.wins}</RightCell>
+                      <RightCell $color="#f59e0b">{entry.draws}</RightCell>
+                      <RightCell $color="#f87171">{entry.losses}</RightCell>
+                      <RightCell $color="rgba(192,132,252,0.9)">{entry.total}</RightCell>
                     </LeaderboardRow>
                   ))}
                 </tbody>
               </LeaderboardTable>
-            </div>
+            </OverflowContainer>
           )}
         </LeaderboardCard>
       </Container>
