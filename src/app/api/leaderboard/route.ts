@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export const GET = async () => {
   try {
     // Aggregate wins/losses/draws at the database level
     const grouped = await prisma.gameRecord.groupBy({

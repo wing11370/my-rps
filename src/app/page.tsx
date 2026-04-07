@@ -1,177 +1,175 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type FC } from "react";
 
-type Move = 'rock' | 'paper' | 'scissors'
-type Result = 'win' | 'loss' | 'draw'
+type Move = "rock" | "paper" | "scissors";
+type Result = "win" | "loss" | "draw";
 
 interface User {
-  id: number
-  username: string
+  id: number;
+  username: string;
 }
 
 interface Score {
-  wins: number
-  losses: number
-  draws: number
+  wins: number;
+  losses: number;
+  draws: number;
 }
 
 interface LeaderboardEntry {
-  id: number
-  username: string
-  wins: number
-  losses: number
-  draws: number
-  total: number
+  id: number;
+  username: string;
+  wins: number;
+  losses: number;
+  draws: number;
+  total: number;
 }
 
 const moveEmoji: Record<Move, string> = {
-  rock: '🪨',
-  paper: '📄',
-  scissors: '✂️',
-}
+  rock: "🪨",
+  paper: "📄",
+  scissors: "✂️",
+};
 
 const moveName: Record<Move, string> = {
-  rock: '石頭',
-  paper: '布',
-  scissors: '剪刀',
-}
+  rock: "石頭",
+  paper: "布",
+  scissors: "剪刀",
+};
 
-const moves: Move[] = ['rock', 'paper', 'scissors']
+const moves: Move[] = ["rock", "paper", "scissors"];
 
-function getComputerMove(): Move {
-  return moves[Math.floor(Math.random() * 3)]
-}
+const getComputerMove = (): Move => moves[Math.floor(Math.random() * 3)]
 
-function determineResult(player: Move, cpu: Move): Result {
-  if (player === cpu) return 'draw'
+const determineResult = (player: Move, cpu: Move): Result => {
+  if (player === cpu) return "draw"
   if (
-    (player === 'rock' && cpu === 'scissors') ||
-    (player === 'paper' && cpu === 'rock') ||
-    (player === 'scissors' && cpu === 'paper')
+    (player === "rock" && cpu === "scissors") ||
+    (player === "paper" && cpu === "rock") ||
+    (player === "scissors" && cpu === "paper")
   ) {
-    return 'win'
+    return "win"
   }
-  return 'loss'
+  return "loss"
 }
 
-export default function Home() {
-  const [user, setUser] = useState<User | null>(null)
-  const [usernameInput, setUsernameInput] = useState('')
-  const [score, setScore] = useState<Score>({ wins: 0, losses: 0, draws: 0 })
-  const [playerMove, setPlayerMove] = useState<Move | null>(null)
-  const [cpuMove, setCpuMove] = useState<Move | null>(null)
-  const [result, setResult] = useState<Result | null>(null)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
-  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false)
-  const [loginError, setLoginError] = useState('')
+const Home: FC = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [usernameInput, setUsernameInput] = useState("");
+  const [score, setScore] = useState<Score>({ wins: 0, losses: 0, draws: 0 });
+  const [playerMove, setPlayerMove] = useState<Move | null>(null);
+  const [cpuMove, setCpuMove] = useState<Move | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
   const fetchLeaderboard = useCallback(async () => {
-    setLoadingLeaderboard(true)
+    setLoadingLeaderboard(true);
     try {
-      const res = await fetch('/api/leaderboard')
-      const data = await res.json()
-      setLeaderboard(data)
+      const res = await fetch("/api/leaderboard");
+      const data = await res.json();
+      setLeaderboard(data);
     } catch (err) {
-      console.error('Failed to fetch leaderboard', err)
+      console.error("Failed to fetch leaderboard", err);
     } finally {
-      setLoadingLeaderboard(false)
+      setLoadingLeaderboard(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchLeaderboard()
-  }, [fetchLeaderboard])
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoginError('')
-    const trimmed = usernameInput.trim()
+    e.preventDefault();
+    setLoginError("");
+    const trimmed = usernameInput.trim();
     if (!trimmed) {
-      setLoginError('請輸入用戶名')
-      return
+      setLoginError("請輸入用戶名");
+      return;
     }
     try {
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: trimmed }),
-      })
+      });
       if (!res.ok) {
-        const data = await res.json()
-        setLoginError(data.error || '登入失敗')
-        return
+        const data = await res.json();
+        setLoginError(data.error || "登入失敗");
+        return;
       }
-      const data = await res.json()
-      setUser(data)
+      const data = await res.json();
+      setUser(data);
     } catch (err) {
-      console.error(err)
-      setLoginError('網路錯誤，請稍後再試')
+      console.error(err);
+      setLoginError("網路錯誤，請稍後再試");
     }
-  }
+  };
 
   const handleMove = async (move: Move) => {
-    if (isAnimating || !user) return
-    setIsAnimating(true)
-    setResult(null)
-    setPlayerMove(null)
-    setCpuMove(null)
+    if (isAnimating || !user) return;
+    setIsAnimating(true);
+    setResult(null);
+    setPlayerMove(null);
+    setCpuMove(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
-    const cpu = getComputerMove()
-    const gameResult = determineResult(move, cpu)
+    const cpu = getComputerMove();
+    const gameResult = determineResult(move, cpu);
 
-    setPlayerMove(move)
-    setCpuMove(cpu)
-    setResult(gameResult)
+    setPlayerMove(move);
+    setCpuMove(cpu);
+    setResult(gameResult);
 
     setScore((prev) => ({
-      wins: prev.wins + (gameResult === 'win' ? 1 : 0),
-      losses: prev.losses + (gameResult === 'loss' ? 1 : 0),
-      draws: prev.draws + (gameResult === 'draw' ? 1 : 0),
-    }))
+      wins: prev.wins + (gameResult === "win" ? 1 : 0),
+      losses: prev.losses + (gameResult === "loss" ? 1 : 0),
+      draws: prev.draws + (gameResult === "draw" ? 1 : 0),
+    }));
 
     try {
-      await fetch('/api/games', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: user.id,
           playerMove: move,
           cpuMove: cpu,
           result: gameResult,
         }),
-      })
-      fetchLeaderboard()
+      });
+      fetchLeaderboard();
     } catch (err) {
-      console.error('Failed to save game', err)
+      console.error("Failed to save game", err);
     }
 
-    setIsAnimating(false)
-  }
+    setIsAnimating(false);
+  };
 
   const handleLogout = () => {
-    setUser(null)
-    setScore({ wins: 0, losses: 0, draws: 0 })
-    setPlayerMove(null)
-    setCpuMove(null)
-    setResult(null)
-    setUsernameInput('')
-  }
+    setUser(null);
+    setScore({ wins: 0, losses: 0, draws: 0 });
+    setPlayerMove(null);
+    setCpuMove(null);
+    setResult(null);
+    setUsernameInput("");
+  };
 
   const resultText: Record<Result, string> = {
-    win: '🎉 你贏了！',
-    loss: '😢 你輸了！',
-    draw: '🤝 平局！',
-  }
+    win: "🎉 你贏了！",
+    loss: "😢 你輸了！",
+    draw: "🤝 平局！",
+  };
 
   const resultColor: Record<Result, string> = {
-    win: 'text-green-400',
-    loss: 'text-red-400',
-    draw: 'text-yellow-400',
-  }
+    win: "text-green-400",
+    loss: "text-red-400",
+    draw: "text-yellow-400",
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
@@ -186,7 +184,9 @@ export default function Home() {
           /* Login Form */
           <div className="flex justify-center">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 w-full max-w-md border border-white/20">
-              <h2 className="text-2xl font-bold mb-6 text-center">歡迎！請輸入你的名字</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center">
+                歡迎！請輸入你的名字
+              </h2>
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <input
@@ -224,42 +224,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Score board */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-green-500/20 border border-green-500/40 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-green-400">{score.wins}</div>
-                <div className="text-green-300 text-sm mt-1">勝利 Wins</div>
-              </div>
-              <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-yellow-400">{score.draws}</div>
-                <div className="text-yellow-300 text-sm mt-1">平局 Draws</div>
-              </div>
-              <div className="bg-red-500/20 border border-red-500/40 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-red-400">{score.losses}</div>
-                <div className="text-red-300 text-sm mt-1">失敗 Losses</div>
-              </div>
-            </div>
-
-            {/* Game Result */}
-            {result && playerMove && cpuMove && (
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center">
-                <div className="flex justify-center items-center gap-8 mb-4">
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">{moveEmoji[playerMove]}</div>
-                    <div className="text-sm text-purple-300">你：{moveName[playerMove]}</div>
-                  </div>
-                  <div className="text-3xl font-bold text-white/50">VS</div>
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">{moveEmoji[cpuMove]}</div>
-                    <div className="text-sm text-purple-300">電腦：{moveName[cpuMove]}</div>
-                  </div>
-                </div>
-                <div className={`text-3xl font-bold ${resultColor[result]}`}>
-                  {resultText[result]}
-                </div>
-              </div>
-            )}
-
             {/* Move buttons */}
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h3 className="text-center text-lg font-semibold mb-6 text-purple-200">
@@ -277,11 +241,59 @@ export default function Home() {
                       {moveEmoji[move]}
                     </span>
                     <span className="font-semibold">{moveName[move]}</span>
-                    <span className="text-xs text-purple-300 mt-0.5 capitalize">{move}</span>
+                    <span className="text-xs text-purple-300 mt-0.5 capitalize">
+                      {move}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Score board */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-green-500/20 border border-green-500/40 rounded-xl p-4 text-center">
+                <div className="text-3xl font-bold text-green-400">
+                  {score.wins}
+                </div>
+                <div className="text-green-300 text-sm mt-1">勝利 Wins</div>
+              </div>
+              <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-xl p-4 text-center">
+                <div className="text-3xl font-bold text-yellow-400">
+                  {score.draws}
+                </div>
+                <div className="text-yellow-300 text-sm mt-1">平局 Draws</div>
+              </div>
+              <div className="bg-red-500/20 border border-red-500/40 rounded-xl p-4 text-center">
+                <div className="text-3xl font-bold text-red-400">
+                  {score.losses}
+                </div>
+                <div className="text-red-300 text-sm mt-1">失敗 Losses</div>
+              </div>
+            </div>
+
+            {/* Game Result */}
+            {result && playerMove && cpuMove && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center">
+                <div className="flex justify-center items-center gap-8 mb-4">
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">{moveEmoji[playerMove]}</div>
+                    <div className="text-sm text-purple-300">
+                      你：{moveName[playerMove]}
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-white/50">VS</div>
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">{moveEmoji[cpuMove]}</div>
+                    <div className="text-sm text-purple-300">
+                      電腦：{moveName[cpuMove]}
+                    </div>
+                  </div>
+                </div>
+                <div className={`text-3xl font-bold ${resultColor[result]}`}>
+                  {resultText[result]}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -294,11 +306,13 @@ export default function Home() {
               disabled={loadingLeaderboard}
               className="text-sm text-purple-300 hover:text-white transition-colors"
             >
-              {loadingLeaderboard ? '載入中...' : '重新整理'}
+              {loadingLeaderboard ? "載入中..." : "重新整理"}
             </button>
           </div>
           {leaderboard.length === 0 ? (
-            <p className="text-center text-purple-300 py-4">尚無紀錄，快來挑戰吧！</p>
+            <p className="text-center text-purple-300 py-4">
+              尚無紀錄，快來挑戰吧！
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -317,17 +331,35 @@ export default function Home() {
                     <tr
                       key={entry.id}
                       className={`border-b border-white/10 hover:bg-white/5 transition-colors ${
-                        user && entry.username === user.username ? 'bg-purple-500/20' : ''
+                        user && entry.username === user.username
+                          ? "bg-purple-500/20"
+                          : ""
                       }`}
                     >
                       <td className="py-3 px-3 font-bold">
-                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                        {index === 0
+                          ? "🥇"
+                          : index === 1
+                            ? "🥈"
+                            : index === 2
+                              ? "🥉"
+                              : `#${index + 1}`}
                       </td>
-                      <td className="py-3 px-3 font-semibold">{entry.username}</td>
-                      <td className="py-3 px-3 text-right text-green-400 font-bold">{entry.wins}</td>
-                      <td className="py-3 px-3 text-right text-yellow-400">{entry.draws}</td>
-                      <td className="py-3 px-3 text-right text-red-400">{entry.losses}</td>
-                      <td className="py-3 px-3 text-right text-purple-300">{entry.total}</td>
+                      <td className="py-3 px-3 font-semibold">
+                        {entry.username}
+                      </td>
+                      <td className="py-3 px-3 text-right text-green-400 font-bold">
+                        {entry.wins}
+                      </td>
+                      <td className="py-3 px-3 text-right text-yellow-400">
+                        {entry.draws}
+                      </td>
+                      <td className="py-3 px-3 text-right text-red-400">
+                        {entry.losses}
+                      </td>
+                      <td className="py-3 px-3 text-right text-purple-300">
+                        {entry.total}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -337,5 +369,7 @@ export default function Home() {
         </div>
       </div>
     </main>
-  )
+  );
 }
+
+export default Home
