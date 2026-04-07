@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# env files (keep .env.example, ignore actual .env)
+.env
+.env.local
+.env.*.local
+
+# Prisma SQLite database file
+prisma/dev.db
+prisma/dev.db-journal
+prisma/*.db
+prisma/*.db-journal
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
