@@ -386,6 +386,16 @@ const InputRow = styled.div`
   align-items: center;
 `;
 
+const CountdownBadge = styled.div`
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #111827;
+  background: rgba(249,115,22,0.95);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  display: inline-block;
+`;
+
 const DangerButton = styled.button<{ $small?: boolean }>`
   width: ${(p) => (p.$small ? "auto" : "100%")};
   padding: ${(p) => (p.$small ? "0.5rem 0.75rem" : "0.75rem 1rem")};
@@ -405,6 +415,7 @@ const DangerButton = styled.button<{ $small?: boolean }>`
 const Home: FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
   const [score, setScore] = useState<Score>({ wins: 0, losses: 0, draws: 0 });
   const [playerMove, setPlayerMove] = useState<Move | null>(null);
   const [cpuMove, setCpuMove] = useState<Move | null>(null);
@@ -414,6 +425,8 @@ const Home: FC = () => {
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [resetting, setResetting] = useState(false);
+
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   // Multiplayer socket state
   const socketRef = useRef<Socket | null>(null);
@@ -474,15 +487,25 @@ const Home: FC = () => {
       setLoginError("請輸入用戶名");
       return;
     }
+    if (!passwordInput || passwordInput.length < 6) {
+      setLoginError('請輸入至少 6 字元的密碼');
+      return;
+    }
     try {
-      const res = await fetch("/api/users", {
+      const res = await fetch("/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: trimmed }),
+        body: JSON.stringify({ username: trimmed, password: passwordInput }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        setLoginError(data.error || "登入失敗");
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 404) {
+          setLoginError('用戶不存在，請先註冊');
+        } else if (res.status === 401) {
+          setLoginError('密碼錯誤');
+        } else {
+          setLoginError(data.error || '登入失敗');
+        }
         return;
       }
       const data = await res.json();
@@ -492,6 +515,38 @@ const Home: FC = () => {
       setLoginError("網路錯誤，請稍後再試");
     }
   };
+
+  const handleRegister = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setLoginError("");
+    const trimmed = usernameInput.trim();
+    if (!trimmed) {
+      setLoginError("請輸入用戶名");
+      return;
+    }
+    if (!passwordInput || passwordInput.length < 6) {
+      setLoginError('請輸入至少 6 字元的密碼');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: trimmed, password: passwordInput }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setLoginError(data.error || '註冊失敗');
+        return;
+      }
+      const data = await res.json();
+      setUser(data);
+    } catch (err) {
+      console.error('register error', err);
+      setLoginError('網路錯誤，請稍後再試');
+    }
+  }
 
   const handleResetScores = async () => {
     if (!confirm('你確定要清空所有分數？此動作無法復原。')) return;
@@ -531,6 +586,16 @@ const Home: FC = () => {
       setOpponent(data?.opponent || null);
     });
 
+    s.on("countdown", (payload: any) => {
+      if (!payload) return;
+      const { seconds } = payload;
+      setCountdown(typeof seconds === 'number' ? seconds : null);
+    });
+
+    s.on("countdown_cancel", () => {
+      setCountdown(null);
+    });
+
     s.on("match_result", (payload: any) => {
       if (!payload) return;
       const { myMove, opponentMove, myResult } = payload;
@@ -557,6 +622,9 @@ const Home: FC = () => {
         .then(() => fetchLeaderboard())
         .catch((err) => console.error("Failed to save multiplayer game", err));
 
+      // clear any countdown UI
+      setCountdown(null);
+
       setIsAnimating(false);
     });
 
@@ -564,6 +632,7 @@ const Home: FC = () => {
       setOpponent(null);
       setInRoom(false);
       setCurrentRoom(null);
+      setCountdown(null);
       // notify user
     });
 
@@ -571,6 +640,7 @@ const Home: FC = () => {
       setInRoom(false);
       setOpponent(null);
       setCurrentRoom(null);
+      setCountdown(null);
       socketRef.current = null;
     });
 
@@ -693,11 +763,22 @@ const Home: FC = () => {
                     placeholder="輸入用戶名..."
                     maxLength={20}
                   />
+                  <TextInput
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    placeholder="密碼 (至少 6 字元)"
+                    maxLength={64}
+                    style={{ marginTop: '0.5rem' }}
+                  />
                   {loginError && (
                     <ErrorText>{loginError}</ErrorText>
                   )}
                 </div>
-                <PrimaryButton type="submit">開始遊戲 🎮</PrimaryButton>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <PrimaryButton type="submit">登入</PrimaryButton>
+                  <PrimaryButton type="button" onClick={handleRegister}>註冊</PrimaryButton>
+                </div>
               </Form>
             </LoginCard>
           </Center>
@@ -730,6 +811,11 @@ const Home: FC = () => {
               {inRoom && (
                 <div>
                   目前房間: <strong>{currentRoom}</strong> — {opponent ? `對手：${opponent.username}` : '等待對手加入...'}
+                </div>
+              )}
+              {countdown !== null && (
+                <div>
+                  <CountdownBadge>剩餘時間：{countdown}s</CountdownBadge>
                 </div>
               )}
             </MultiplayerCard>
