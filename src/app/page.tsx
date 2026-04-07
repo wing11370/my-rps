@@ -121,9 +121,9 @@ const TextInput = styled.input`
   }
 `;
 
-const PrimaryButton = styled.button<{ small?: boolean }>`
-  width: ${(p) => (p.small ? "auto" : "100%")};
-  padding: ${(p) => (p.small ? "0.5rem 0.75rem" : "0.75rem 1rem")};
+const PrimaryButton = styled.button<{ $small?: boolean }>`
+  width: ${(p) => (p.$small ? "auto" : "100%")};
+  padding: ${(p) => (p.$small ? "0.5rem 0.75rem" : "0.75rem 1rem")};
   border-radius: 12px;
   border: none;
   background: linear-gradient(180deg, #8b5cf6, #7c3aed);
@@ -203,10 +203,10 @@ const LeaderboardTable = styled.table`
   border-collapse: collapse;
 `;
 
-const LeaderboardRow = styled.tr<{ highlighted?: boolean }>`
+const LeaderboardRow = styled.tr<{ $highlighted?: boolean }>`
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   transition: background 160ms ease;
-  background: ${(p) => (p.highlighted ? "rgba(124,58,237,0.12)" : "transparent")};
+  background: ${(p) => (p.$highlighted ? "rgba(124,58,237,0.12)" : "transparent")};
   &:hover {
     background: rgba(255, 255, 255, 0.03);
   }
@@ -384,7 +384,7 @@ const Home: FC = () => {
           <div style={{ display: "grid", gap: "1rem" }}>
             <GlassCard style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 1rem" }}>
               <span style={{ fontWeight: 700, fontSize: "1rem" }}>👤 {user.username}</span>
-              <PrimaryButton small onClick={handleLogout}>換人 / 登出</PrimaryButton>
+              <PrimaryButton $small onClick={handleLogout}>換人 / 登出</PrimaryButton>
             </GlassCard>
 
             <MovesWrapper>
@@ -437,7 +437,7 @@ const Home: FC = () => {
         <LeaderboardCard>
           <FlexBetween style={{ marginBottom: "0.5rem" }}>
             <h2 style={{ fontSize: "1.125rem", fontWeight: 800 }}>🏆 排行榜 Leaderboard</h2>
-            <PrimaryButton small onClick={fetchLeaderboard} disabled={loadingLeaderboard}>{loadingLeaderboard ? "載入中..." : "重新整理"}</PrimaryButton>
+            <PrimaryButton $small onClick={fetchLeaderboard} disabled={loadingLeaderboard}>{loadingLeaderboard ? "載入中..." : "重新整理"}</PrimaryButton>
           </FlexBetween>
 
           {leaderboard.length === 0 ? (
@@ -457,7 +457,7 @@ const Home: FC = () => {
                 </thead>
                 <tbody>
                   {leaderboard.map((entry, index) => (
-                    <LeaderboardRow key={entry.id} highlighted={!!user && entry.username === user.username}>
+                    <LeaderboardRow key={entry.id} $highlighted={!!user && entry.username === user.username}>
                       <RankCell>{index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`}</RankCell>
                       <Cell style={{ fontWeight: 700 }}>{entry.username}</Cell>
                       <Cell style={{ textAlign: "right", color: "#34d399", fontWeight: 800 }}>{entry.wins}</Cell>
