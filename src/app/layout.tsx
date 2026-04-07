@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ClientLayout from "@/components/ClientLayout";
 
 export const metadata: Metadata = {
   title: "猜拳遊戲 Rock Paper Scissors",
@@ -13,7 +14,9 @@ const RootLayout = ({
 }>) => {
   return (
     <html lang="zh" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body>
+        <ClientLayout>{children}</ClientLayout>
+      </body>
     </html>
   );
 }

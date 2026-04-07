@@ -181,13 +181,13 @@ const ScoreGrid = styled.div`
   gap: 0.75rem;
 `;
 
-const ScoreCard = styled.div<{ bg?: string; border?: string; text?: string }>`
-  background: ${(p) => p.bg || "rgba(255,255,255,0.06)"};
-  border: 1px solid ${(p) => p.border || "rgba(255,255,255,0.08)"};
+const ScoreCard = styled.div<{ $bg?: string; $border?: string; $text?: string }>`
+  background: ${(p) => p.$bg || "rgba(255,255,255,0.06)"};
+  border: 1px solid ${(p) => p.$border || "rgba(255,255,255,0.08)"};
   border-radius: 12px;
   padding: 0.75rem;
   text-align: center;
-  color: ${(p) => p.text || "#fff"};
+  color: ${(p) => p.$text || "#fff"};
 `;
 
 const ResultCard = styled(GlassCard)`
@@ -401,15 +401,15 @@ const Home: FC = () => {
             </MovesWrapper>
 
             <ScoreGrid>
-              <ScoreCard bg="rgba(16,185,129,0.12)" border="rgba(16,185,129,0.25)" text="#34d399">
+              <ScoreCard $bg="rgba(16,185,129,0.12)" $border="rgba(16,185,129,0.25)" $text="#34d399">
                 <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.wins}</div>
                 <div style={{ color: "rgba(16,185,129,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>勝利 Wins</div>
               </ScoreCard>
-              <ScoreCard bg="rgba(234,179,8,0.12)" border="rgba(234,179,8,0.25)" text="#f59e0b">
+                <ScoreCard $bg="rgba(234,179,8,0.12)" $border="rgba(234,179,8,0.25)" $text="#f59e0b">
                 <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.draws}</div>
                 <div style={{ color: "rgba(234,179,8,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>平局 Draws</div>
               </ScoreCard>
-              <ScoreCard bg="rgba(239,68,68,0.12)" border="rgba(239,68,68,0.25)" text="#f87171">
+                <ScoreCard $bg="rgba(239,68,68,0.12)" $border="rgba(239,68,68,0.25)" $text="#f87171">
                 <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.losses}</div>
                 <div style={{ color: "rgba(239,68,68,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>失敗 Losses</div>
               </ScoreCard>
