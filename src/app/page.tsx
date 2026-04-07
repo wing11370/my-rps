@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, type FC } from "react";
+import React, { useState, useEffect, useCallback, type FC } from "react";
+import styled from "styled-components";
 
 type Move = "rock" | "paper" | "scissors";
 type Result = "win" | "loss" | "draw";
@@ -39,19 +40,196 @@ const moveName: Record<Move, string> = {
 
 const moves: Move[] = ["rock", "paper", "scissors"];
 
-const getComputerMove = (): Move => moves[Math.floor(Math.random() * 3)]
+const getComputerMove = (): Move => moves[Math.floor(Math.random() * 3)];
 
 const determineResult = (player: Move, cpu: Move): Result => {
-  if (player === cpu) return "draw"
+  if (player === cpu) return "draw";
   if (
     (player === "rock" && cpu === "scissors") ||
     (player === "paper" && cpu === "rock") ||
     (player === "scissors" && cpu === "paper")
   ) {
-    return "win"
+    return "win";
   }
-  return "loss"
-}
+  return "loss";
+};
+
+// Styled components
+const Main = styled.main`
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e293b 0%, #4c1d95 50%, #be185d 100%);
+  color: #fff;
+`;
+
+const Container = styled.div`
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+`;
+
+const Header = styled.header`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
+const Title = styled.h1`
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+`;
+
+const Subtitle = styled.p`
+  color: rgba(192, 132, 252, 0.9);
+  font-size: 1.125rem;
+`;
+
+const GlassCard = styled.div`
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+`;
+
+const Center = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const LoginCard = styled(GlassCard)`
+  width: 100%;
+  max-width: 28rem;
+`;
+
+const Form = styled.form`
+  display: grid;
+  gap: 1rem;
+`;
+
+const TextInput = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 1rem;
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 6px rgba(124, 58, 237, 0.085);
+  }
+`;
+
+const PrimaryButton = styled.button<{ small?: boolean }>`
+  width: ${(p) => (p.small ? "auto" : "100%")};
+  padding: ${(p) => (p.small ? "0.5rem 0.75rem" : "0.75rem 1rem")};
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(180deg, #8b5cf6, #7c3aed);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const FlexBetween = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const MovesWrapper = styled(GlassCard)`
+  padding: 1.25rem;
+`;
+
+const MovesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+`;
+
+const MoveButton = styled.button`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+  &:hover {
+    transform: scale(1.03);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const ScoreGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+`;
+
+const ScoreCard = styled.div<{ bg?: string; border?: string; text?: string }>`
+  background: ${(p) => p.bg || "rgba(255,255,255,0.06)"};
+  border: 1px solid ${(p) => p.border || "rgba(255,255,255,0.08)"};
+  border-radius: 12px;
+  padding: 0.75rem;
+  text-align: center;
+  color: ${(p) => p.text || "#fff"};
+`;
+
+const ResultCard = styled(GlassCard)`
+  text-align: center;
+`;
+
+const LeaderboardCard = styled(GlassCard)`
+  margin-top: 1.25rem;
+`;
+
+const LeaderboardTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+const LeaderboardRow = styled.tr<{ highlighted?: boolean }>`
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 160ms ease;
+  background: ${(p) => (p.highlighted ? "rgba(124,58,237,0.12)" : "transparent")};
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+`;
+
+const LeaderboardHead = styled.th`
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  color: rgba(192, 132, 252, 0.95);
+  font-weight: 600;
+`;
+
+const Cell = styled.td`
+  padding: 0.5rem 0.75rem;
+`;
+
+const RankCell = styled(Cell)`
+  font-weight: 700;
+`;
+
+const Centered = styled.div`
+  text-align: center;
+`;
 
 const Home: FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -166,210 +344,136 @@ const Home: FC = () => {
   };
 
   const resultColor: Record<Result, string> = {
-    win: "text-green-400",
-    loss: "text-red-400",
-    draw: "text-yellow-400",
+    win: "#34d399",
+    loss: "#f87171",
+    draw: "#f59e0b",
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold mb-2">✊ 猜拳遊戲</h1>
-          <p className="text-purple-300 text-lg">Rock Paper Scissors</p>
-        </div>
+    <Main>
+      <Container>
+        <Header>
+          <Title>✊ 猜拳遊戲</Title>
+          <Subtitle>Rock Paper Scissors</Subtitle>
+        </Header>
 
         {!user ? (
-          /* Login Form */
-          <div className="flex justify-center">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 w-full max-w-md border border-white/20">
-              <h2 className="text-2xl font-bold mb-6 text-center">
+          <Center>
+            <LoginCard>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.75rem", textAlign: "center" }}>
                 歡迎！請輸入你的名字
               </h2>
-              <form onSubmit={handleLogin} className="space-y-4">
+              <Form onSubmit={handleLogin}>
                 <div>
-                  <input
+                  <TextInput
                     type="text"
                     value={usernameInput}
                     onChange={(e) => setUsernameInput(e.target.value)}
                     placeholder="輸入用戶名..."
-                    className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent text-lg"
                     maxLength={20}
                   />
                   {loginError && (
-                    <p className="text-red-400 text-sm mt-1">{loginError}</p>
+                    <p style={{ color: "#fb7185", marginTop: "0.5rem", fontSize: "0.875rem" }}>{loginError}</p>
                   )}
                 </div>
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-purple-500 hover:bg-purple-400 rounded-xl font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  開始遊戲 🎮
-                </button>
-              </form>
-            </div>
-          </div>
+                <PrimaryButton type="submit">開始遊戲 🎮</PrimaryButton>
+              </Form>
+            </LoginCard>
+          </Center>
         ) : (
-          /* Game Area */
-          <div className="space-y-6">
-            {/* User bar */}
-            <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/20">
-              <span className="font-semibold text-lg">👤 {user.username}</span>
-              <button
-                onClick={handleLogout}
-                className="text-sm text-purple-300 hover:text-white transition-colors"
-              >
-                換人 / 登出
-              </button>
-            </div>
+          <div style={{ display: "grid", gap: "1rem" }}>
+            <GlassCard style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 1rem" }}>
+              <span style={{ fontWeight: 700, fontSize: "1rem" }}>👤 {user.username}</span>
+              <PrimaryButton small onClick={handleLogout}>換人 / 登出</PrimaryButton>
+            </GlassCard>
 
-            {/* Move buttons */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <h3 className="text-center text-lg font-semibold mb-6 text-purple-200">
-                選擇你的出拳！
-              </h3>
-              <div className="grid grid-cols-3 gap-4">
+            <MovesWrapper>
+              <h3 style={{ textAlign: "center", fontSize: "1rem", fontWeight: 700, marginBottom: "0.75rem", color: "rgba(192,132,252,0.9)" }}>選擇你的出拳！</h3>
+              <MovesGrid>
                 {moves.map((move) => (
-                  <button
-                    key={move}
-                    onClick={() => handleMove(move)}
-                    disabled={isAnimating}
-                    className="flex flex-col items-center justify-center py-6 bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/50 rounded-2xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
-                  >
-                    <span className="text-5xl mb-2 group-hover:scale-110 transition-transform">
-                      {moveEmoji[move]}
-                    </span>
-                    <span className="font-semibold">{moveName[move]}</span>
-                    <span className="text-xs text-purple-300 mt-0.5 capitalize">
-                      {move}
-                    </span>
-                  </button>
+                  <MoveButton key={move} onClick={() => handleMove(move)} disabled={isAnimating}>
+                    <span style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>{moveEmoji[move]}</span>
+                    <span style={{ fontWeight: 700 }}>{moveName[move]}</span>
+                    <span style={{ fontSize: "0.75rem", color: "rgba(192,132,252,0.8)", marginTop: "0.25rem", textTransform: "capitalize" }}>{move}</span>
+                  </MoveButton>
                 ))}
-              </div>
-            </div>
+              </MovesGrid>
+            </MovesWrapper>
 
-            {/* Score board */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-green-500/20 border border-green-500/40 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-green-400">
-                  {score.wins}
-                </div>
-                <div className="text-green-300 text-sm mt-1">勝利 Wins</div>
-              </div>
-              <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-yellow-400">
-                  {score.draws}
-                </div>
-                <div className="text-yellow-300 text-sm mt-1">平局 Draws</div>
-              </div>
-              <div className="bg-red-500/20 border border-red-500/40 rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-red-400">
-                  {score.losses}
-                </div>
-                <div className="text-red-300 text-sm mt-1">失敗 Losses</div>
-              </div>
-            </div>
+            <ScoreGrid>
+              <ScoreCard bg="rgba(16,185,129,0.12)" border="rgba(16,185,129,0.25)" text="#34d399">
+                <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.wins}</div>
+                <div style={{ color: "rgba(16,185,129,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>勝利 Wins</div>
+              </ScoreCard>
+              <ScoreCard bg="rgba(234,179,8,0.12)" border="rgba(234,179,8,0.25)" text="#f59e0b">
+                <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.draws}</div>
+                <div style={{ color: "rgba(234,179,8,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>平局 Draws</div>
+              </ScoreCard>
+              <ScoreCard bg="rgba(239,68,68,0.12)" border="rgba(239,68,68,0.25)" text="#f87171">
+                <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{score.losses}</div>
+                <div style={{ color: "rgba(239,68,68,0.7)", marginTop: "0.25rem", fontSize: "0.875rem" }}>失敗 Losses</div>
+              </ScoreCard>
+            </ScoreGrid>
 
-            {/* Game Result */}
             {result && playerMove && cpuMove && (
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center">
-                <div className="flex justify-center items-center gap-8 mb-4">
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">{moveEmoji[playerMove]}</div>
-                    <div className="text-sm text-purple-300">
-                      你：{moveName[playerMove]}
-                    </div>
+              <ResultCard>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "2rem", marginBottom: "0.75rem" }}>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "3rem", marginBottom: "0.25rem" }}>{moveEmoji[playerMove]}</div>
+                    <div style={{ color: "rgba(192,132,252,0.9)" }}>你：{moveName[playerMove]}</div>
                   </div>
-                  <div className="text-3xl font-bold text-white/50">VS</div>
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">{moveEmoji[cpuMove]}</div>
-                    <div className="text-sm text-purple-300">
-                      電腦：{moveName[cpuMove]}
-                    </div>
+                  <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "rgba(255,255,255,0.6)" }}>VS</div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "3rem", marginBottom: "0.25rem" }}>{moveEmoji[cpuMove]}</div>
+                    <div style={{ color: "rgba(192,132,252,0.9)" }}>電腦：{moveName[cpuMove]}</div>
                   </div>
                 </div>
-                <div className={`text-3xl font-bold ${resultColor[result]}`}>
-                  {resultText[result]}
-                </div>
-              </div>
+                <div style={{ fontSize: "1.5rem", fontWeight: 800, color: resultColor[result] }}>{resultText[result]}</div>
+              </ResultCard>
             )}
           </div>
         )}
 
-        {/* Leaderboard */}
-        <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">🏆 排行榜 Leaderboard</h2>
-            <button
-              onClick={fetchLeaderboard}
-              disabled={loadingLeaderboard}
-              className="text-sm text-purple-300 hover:text-white transition-colors"
-            >
-              {loadingLeaderboard ? "載入中..." : "重新整理"}
-            </button>
-          </div>
+        <LeaderboardCard>
+          <FlexBetween style={{ marginBottom: "0.5rem" }}>
+            <h2 style={{ fontSize: "1.125rem", fontWeight: 800 }}>🏆 排行榜 Leaderboard</h2>
+            <PrimaryButton small onClick={fetchLeaderboard} disabled={loadingLeaderboard}>{loadingLeaderboard ? "載入中..." : "重新整理"}</PrimaryButton>
+          </FlexBetween>
+
           {leaderboard.length === 0 ? (
-            <p className="text-center text-purple-300 py-4">
-              尚無紀錄，快來挑戰吧！
-            </p>
+            <Centered style={{ color: "rgba(192,132,252,0.9)", padding: "1rem 0" }}>尚無紀錄，快來挑戰吧！</Centered>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div style={{ overflowX: "auto" }}>
+              <LeaderboardTable>
                 <thead>
-                  <tr className="text-purple-300 text-sm border-b border-white/20">
-                    <th className="text-left py-2 px-3">排名</th>
-                    <th className="text-left py-2 px-3">玩家</th>
-                    <th className="text-right py-2 px-3 text-green-400">勝</th>
-                    <th className="text-right py-2 px-3 text-yellow-400">平</th>
-                    <th className="text-right py-2 px-3 text-red-400">敗</th>
-                    <th className="text-right py-2 px-3">總場次</th>
+                  <tr>
+                    <LeaderboardHead>排名</LeaderboardHead>
+                    <LeaderboardHead>玩家</LeaderboardHead>
+                    <LeaderboardHead style={{ textAlign: "right" }}>勝</LeaderboardHead>
+                    <LeaderboardHead style={{ textAlign: "right" }}>平</LeaderboardHead>
+                    <LeaderboardHead style={{ textAlign: "right" }}>敗</LeaderboardHead>
+                    <LeaderboardHead style={{ textAlign: "right" }}>總場次</LeaderboardHead>
                   </tr>
                 </thead>
                 <tbody>
                   {leaderboard.map((entry, index) => (
-                    <tr
-                      key={entry.id}
-                      className={`border-b border-white/10 hover:bg-white/5 transition-colors ${
-                        user && entry.username === user.username
-                          ? "bg-purple-500/20"
-                          : ""
-                      }`}
-                    >
-                      <td className="py-3 px-3 font-bold">
-                        {index === 0
-                          ? "🥇"
-                          : index === 1
-                            ? "🥈"
-                            : index === 2
-                              ? "🥉"
-                              : `#${index + 1}`}
-                      </td>
-                      <td className="py-3 px-3 font-semibold">
-                        {entry.username}
-                      </td>
-                      <td className="py-3 px-3 text-right text-green-400 font-bold">
-                        {entry.wins}
-                      </td>
-                      <td className="py-3 px-3 text-right text-yellow-400">
-                        {entry.draws}
-                      </td>
-                      <td className="py-3 px-3 text-right text-red-400">
-                        {entry.losses}
-                      </td>
-                      <td className="py-3 px-3 text-right text-purple-300">
-                        {entry.total}
-                      </td>
-                    </tr>
+                    <LeaderboardRow key={entry.id} highlighted={!!user && entry.username === user.username}>
+                      <RankCell>{index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`}</RankCell>
+                      <Cell style={{ fontWeight: 700 }}>{entry.username}</Cell>
+                      <Cell style={{ textAlign: "right", color: "#34d399", fontWeight: 800 }}>{entry.wins}</Cell>
+                      <Cell style={{ textAlign: "right", color: "#f59e0b" }}>{entry.draws}</Cell>
+                      <Cell style={{ textAlign: "right", color: "#f87171" }}>{entry.losses}</Cell>
+                      <Cell style={{ textAlign: "right", color: "rgba(192,132,252,0.9)" }}>{entry.total}</Cell>
+                    </LeaderboardRow>
                   ))}
                 </tbody>
-              </table>
+              </LeaderboardTable>
             </div>
           )}
-        </div>
-      </div>
-    </main>
+        </LeaderboardCard>
+      </Container>
+    </Main>
   );
-}
+};
 
-export default Home
+export default Home;
